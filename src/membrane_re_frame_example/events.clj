@@ -131,6 +131,22 @@
   (fn [db [_ new-filter-kw]]     ;; new-filter-kw is one of :all, :active or :done
     (assoc db :showing new-filter-kw)))
 
+(reg-event-db
+  :keydown
+  [check-spec-interceptor]
+  (fn [db [_ k]]     ;; new-filter-kw is one of :all, :active or :done
+      (println "event: keydown: " k)
+      (println "event: keydown: type: " (type k))
+      (let [story-num     (:story-num db)
+            new-story-num (case k
+                            "j" (max 0 (inc story-num))
+                            "k" (max 0 (dec story-num))
+                            story-num)]
+
+      ;(let [t (str (:text db) k)]
+      ;  (println "t: " t)
+        (assoc db :story-num new-story-num))))
+
 ;; NOTE: below is a rewrite of the event handler (above) using a `path` Interceptor
 ;; You'll find it illuminating to compare this rewrite with the original.
 ;;
@@ -152,6 +168,7 @@
   [check-spec-interceptor (path :showing)]
 
   ;; The event handler
+
   ;; Because of the `path` interceptor above, the 1st parameter to
   ;; the handler below won't be the entire 'db', and instead will
   ;; be the value at the path `[:showing]` within db.

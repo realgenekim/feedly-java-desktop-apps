@@ -43,10 +43,26 @@
 ;;   2.  `events.cljs` for the registration of :initialise-db handler
 ;;
 
-(def default-db           ;; what gets put into app-db by default.
-  {:todos   (sorted-map)  ;; an empty list of todos. Use the (int) :id as the key
-   :showing :all})        ;; show all todos
+;; (defn read-file []
+;  (-> (slurp (str "/Users/genekim/src.local/feedly" "/" "ccsp2.txt"))
+;      (read-string)))
 
+(defn read-file []
+  (-> (slurp (str "/Users/genekim/src.local/feedly" "/" "clojure.txt"))
+      (read-string)))
+
+(def default-db           ;; what gets put into app-db by default.
+  {:text ""
+   :todos   (sorted-map)  ;; an empty list of todos. Use the (int) :id as the key
+   :showing :all
+   :story-num 0
+   :stories (read-file)
+   })        ;; show all todos
+
+(comment
+  (def text (-> (slurp (str "/Users/genekim/src.local/feedly" "/" "ccsp2.txt"))
+                (read-string)))
+  )
 
 ;; -- Local Storage  ----------------------------------------------------------
 ;;
@@ -85,3 +101,4 @@
 ;;                    (some->> (.getItem js/localStorage ls-key)
 ;;                             (cljs.reader/read-string)    ;; EDN map -> map
 ;;                             )))))
+

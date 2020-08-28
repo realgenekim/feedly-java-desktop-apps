@@ -1,19 +1,20 @@
-(ns membrane-re-frame-example.views
+(ns membrane-re-frame-example.view-feedly
   (:require [membrane.skia :as skia]
             [membrane.basic-components :as basic]
             [membrane.lanterna :as lanterna]
             [membrane.re-frame :as memframe]
             [membrane-re-frame-example.events :as events]
+            [membrane-re-frame-example.text :as text]
             [membrane.ui :as ui
              :refer
              [horizontal-layout
               vertical-layout
               on]]
             [re-frame.core :as rf :refer [reg-event-db reg-event-fx inject-cofx path after reg-sub subscribe dispatch]]
-
             membrane-re-frame-example.db
             membrane-re-frame-example.subs
-            membrane-re-frame-example.events))
+            membrane-re-frame-example.events
+            [membrane-re-frame-example.htmlcleaner :as html]))
 
 
 
@@ -74,7 +75,7 @@
                       [[:toggle-done id]])
                     (ui/checkbox done)))
      (ui/spacer 5 0)
-     
+
      (on
       :change
       (fn [s]
@@ -138,12 +139,66 @@
     :on-save #(when (seq %)
                 [:add-todo %])}))
 
+(defn fix-scroll [elem]
+  (ui/on-scroll (fn [[sx sy]]
+                  (ui/scroll elem [(- sx) (- sy)]))
+                elem))
+
+(defn test-scrollview [text]
+  [(ui/translate 10 10
+                 (fix-scroll
+                   (memframe/get-scrollview :my-scrollview [600 800]
+                                            (ui/label text))))])
+
+(def lorem-ipsum
+  (clojure.string/join
+    "\n"
+    (repeatedly
+      800
+      (fn []
+        (clojure.string/join
+          (repeatedly (rand-int 1000)
+                      #(rand-nth "abcdefghijklmnopqrstuvwxyz ")))))))
+
+(defn clean [x]
+  (:content (html/parse-page x)))
+
+(defn stories
+  []
+  (let [sts @(rf/subscribe [:story-text])
+        storynum @(rf/subscribe [:story-num])
+        title (format "%d: %s: %s" storynum
+                      (-> sts :author)
+                      (-> sts :title))
+        datestr (str (java.util.Date. (:published sts)))
+        text (-> sts
+                 :content
+                 :content)
+        plaintext (clean text)]
+                 ; (subs 0 50))]
+    ;(println "stories: " sts)
+    ;(println "text: " text)
+    ;(ui/label (str "text: " text))
+    ;(basic/textarea :text (str "text: " text)
+    ;                :scroll-bounds [50 50])))
+    ;(basic/scrollview :text (str "text: " text)
+    ;                :scroll-bounds [50 50])))
+    [(vertical-layout
+       (ui/label title)
+       (ui/label datestr)
+       (test-scrollview (text/line-wrap plaintext 80)))]))
+    ;(test-scrollview lorem-ipsum)))
+    ;(basic/test-scrollview)))
+
+
+
 
 (defn todo-app
   []
   (on :key-press
       (fn [s]
         (println "main: keypress event: " s)
+        (println "type: " (type s))
         [[:keydown s]])
       (ui/translate
        10 10
@@ -154,7 +209,8 @@
         (when (seq @(subscribe [:todos]))
           (task-list))
         (ui/spacer 0 20)
-        (footer-controls)))))
+        (footer-controls)
+        (stories)))))
 
 
 (println "global hello")
@@ -188,3 +244,17 @@
                                   (println "main: keypress event: " s)
                                   [[:keydown s]])
                                 (ui/label "Hello from key")))))))
+
+(comment
+
+
+  (def lorem-ipsum (clojure.string/join
+                     "\n"
+                     (repeatedly 800
+                                 (fn []
+                                   (clojure.string/join
+                                      (repeatedly (rand-int 50)
+                                                    #(rand-nth "abcdefghijklmnopqrstuvwxyz ")))))))
+
+  (skia/run #(memframe/re-frame-app (#'test-scrollview lorem-ipsum)))
+  (skia/run #(memframe/re-frame-app (#'stories))))

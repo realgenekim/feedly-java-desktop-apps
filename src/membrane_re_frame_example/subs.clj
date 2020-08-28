@@ -27,6 +27,10 @@
   (:todos db))
 (reg-sub :sorted-todos sorted-todos)    ;; usage: (subscribe [:sorted-todos])
 
+(reg-sub
+  :text
+  (fn [db _]
+    (:text db)))
 
 ;; -------------------------------------------------------------------------------------
 ;; Layer 3
@@ -110,6 +114,23 @@
  :input-text
  (fn [db [_ id]]
    (get db id "")))
+
+(reg-sub
+  :story-num
+  (fn [db [_]]
+    (:story-num db)))
+
+(reg-sub
+  :story-text
+  (fn [db _]
+    (let [story-num (:story-num db)]
+      ;(println "sub: story-num: " story-num)
+      ;(println "sub: story: " (first (:stories db)))
+      (nth (:stories db)
+           story-num))))
+      ;"abc")))
+
+
 
 ;; -------------------------------------------------------------------------------------
 ;; Hey, wait on!!

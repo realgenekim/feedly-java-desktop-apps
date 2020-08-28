@@ -69,8 +69,8 @@
 (defn todo-item
   [{:keys [id done title] :as todo}]
   (let [;;editing @(rf/subscribe [:extra [:editing (:id todo)]])
-        input-id [:todo-input id]
-        ]
+        input-id [:todo-input id]]
+
     (horizontal-layout
      
      (ui/translate 0 1
@@ -150,10 +150,16 @@
    (task-entry)
    (when (seq @(subscribe [:todos]))
      (task-list))
-   (footer-controls)
-   ))
+   (footer-controls)))
+
 
 
 (defn -main [& args]
   (dispatch [:initialize-db])  
-  (lanterna/run #(memframe/re-frame-app (todo-app))))
+  (lanterna/run #(memframe/re-frame-app
+                   (on :key-press
+                       (fn [s]
+                         (spit "test.log" (str "keypress: " s "\n") :append true)
+                         [[:keydown s]])
+                       (lanterna/label "Hello from key")))))
+                   ;(todo-app))))
