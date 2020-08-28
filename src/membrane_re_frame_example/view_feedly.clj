@@ -31,10 +31,12 @@
      (ui/wrap-on
       :key-press
       (fn [handler s]
-        (if (= s :enter)
-          [(on-save text)
-           [:set-input-text input-id ""]]
-          (handler s)))
+        (let [effects (handler s)]
+          (println effects)
+          (if (= s :enter)
+            [(on-save text)
+             [:set-input-text input-id ""]]
+            (handler s))))
       (ui/translate
        10 5
        (on
@@ -195,22 +197,34 @@
 
 (defn todo-app
   []
-  (on :key-press
-      (fn [s]
-        (println "main: keypress event: " s)
-        (println "type: " (type s))
-        [[:keydown s]])
-      (ui/translate
-       10 10
-       (vertical-layout
-        (ui/label (str "Hello from key8: " @(subscribe [:text])))
-        (task-entry)
-        (ui/spacer 0 20)
-        (when (seq @(subscribe [:todos]))
-          (task-list))
-        (ui/spacer 0 20)
-        (footer-controls)
-        (stories)))))
+  (ui/wrap-on
+    :key-press
+    (fn [handler s]
+      (let [effects (handler s)]
+        (println effects)
+        (if (seq effects)
+          ; handled by children?
+          effects
+          ; else handle it
+          (do
+            (println "main: keypress event: " s)
+            (println "type: " (type s))
+            (if (= s :escape)
+              (do
+                (println "caught escape!")
+                (swap! memframe/text-boxes assoc :membrane.re-frame/focus nil)))
+            [[:keydown s]]))))
+    (ui/translate
+     10 10
+     (vertical-layout
+      (ui/label (str "Hello from key8: " @(subscribe [:text])))
+      (task-entry)
+      (ui/spacer 0 20)
+      (when (seq @(subscribe [:todos]))
+        (task-list))
+      (ui/spacer 0 20)
+      (footer-controls)
+      (stories)))))
 
 
 (println "global hello")
@@ -254,7 +268,46 @@
                                  (fn []
                                    (clojure.string/join
                                       (repeatedly (rand-int 50)
-                                                    #(rand-nth "abcdefghijklmnopqrstuvwxyz ")))))))
+                                                  #(rand-nth "abcdefghijklmnopqrstuvwxyz ")))))))
 
   (skia/run #(memframe/re-frame-app (#'test-scrollview lorem-ipsum)))
   (skia/run #(memframe/re-frame-app (#'stories))))
+
+
+(comment
+  object[clojure.lang.Atom
+         0x2f0a3cc8
+         {:status :ready,
+          :val {[:todo-input "new-todo"] {:text "dddddddddddddddjjjjjjjjkkjjj",
+                                          :textarea-state {:cursor 20,
+                                                           :mpos [133.556640625 10.80859375],
+                                                           :down-pos nil,
+                                                           :select-cursor nil},
+                                          :extra {[[[(get [:todo-input "new-todo"]) :text]
+                                                    [(get [:todo-input "new-todo"])
+                                                     :textarea-state
+                                                     [(keypath :cursor) (nil->val 0)]]
+                                                    [(fn-call (= focus (clojure.core/into arg-path-text-16264 [])))]
+                                                    [(get [:todo-input "new-todo"]) :font]
+                                                    [(get [:todo-input "new-todo"]) :textarea-state (keypath :down-pos)]
+                                                    [(get [:todo-input "new-todo"]) :textarea-state (keypath :mpos)]
+                                                    [(constant true)]
+                                                    [(get [:todo-input "new-todo"])
+                                                     :textarea-state
+                                                     (keypath :select-cursor)]]
+                                                   :$last-click] [1598644212128 [133.556640625 10.80859375]]}},
+                :membrane.re-frame/focus [(get [:todo-input "new-todo"]) :text],
+                [:todo-input 1] {:text "jkkjddjkkkfffff∂∂∂∂jkkkkkkk",
+                                 :textarea-state {:cursor 27,
+                                                  :mpos [145.359375 14.484375],
+                                                  :down-pos nil,
+                                                  :select-cursor nil},
+                                 :extra {[[[(get [:todo-input 1]) :text]
+                                           [(get [:todo-input 1]) :textarea-state [(keypath :cursor) (nil->val 0)]]
+                                           [(fn-call (= focus (clojure.core/into arg-path-text-16264 [])))]
+                                           [(get [:todo-input 1]) :font]
+                                           [(get [:todo-input 1]) :textarea-state (keypath :down-pos)]
+                                           [(get [:todo-input 1]) :textarea-state (keypath :mpos)]
+                                           [(constant true)]
+                                           [(get [:todo-input 1]) :textarea-state (keypath :select-cursor)]]
+                                          :$last-click] [1598644168468 [145.359375 14.484375]]}}}}])
