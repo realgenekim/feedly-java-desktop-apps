@@ -189,7 +189,8 @@
         storynum  @(rf/subscribe [:story-num])
         titles    @(rf/subscribe [:story-titles])
         stories   @(rf/subscribe [:stories])
-        title     (format "%d: %s: %s" storynum
+        textbox   @(rf/subscribe [:text])
+        title     (format "%s: %s" storynum
                           (-> sts :author)
                           (-> sts :title))
         datestr   (str (java.util.Date. (:published sts)))
@@ -199,7 +200,11 @@
         plaintext (clean text)]
 
     (vertical-layout
-      (ui/label "test")
+      (ui/label (format "selected: %d of %d" storynum (count stories)))
+      (ui/label (format "    (search: %s)" textbox))
+      (ui/label title)
+      (ui/label datestr)
+      (ui/spacer 0 10)
       ;(ui/label (format "%d of %d" storynum (count stories)))
       (horizontal-layout
         [(fix-scroll
@@ -209,8 +214,6 @@
              (gen-clickable-lines-memo stories)))]
              ;(ui/label (clojure.string/join "\n" titles))))]
         [(vertical-layout
-           (ui/label title)
-           (ui/label datestr)
            (test-scrollview (text/line-wrap plaintext 80)))]))))
     ;(test-scrollview lorem-ipsum)))
     ;(basic/test-scrollview)))

@@ -233,7 +233,8 @@
  :set-input-text
  (fn [db [_ id s]]
    (println ":set-input-text: " id s)
-   (assoc db id s)))
+   (assoc db id s
+             :input-text s)))
 
 (reg-event-db
   :select-article-id
