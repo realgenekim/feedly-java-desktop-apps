@@ -32,6 +32,9 @@
   (fn [db _]
     (:text db)))
 
+(comment
+  (re-frame.subs/clear-subscription-cache!))
+
 ;; -------------------------------------------------------------------------------------
 ;; Layer 3
 ;;
@@ -136,6 +139,10 @@
     (->> (:stories db)
          (map :title))))
 
+(reg-sub
+  :stories
+  (fn [db _]
+    (:stories db)))
 
 
 

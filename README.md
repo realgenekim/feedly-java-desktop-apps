@@ -6,6 +6,20 @@ The code is largely derived from https://github.com/day8/re-frame/tree/master/ex
 
 Both the desktop and the terminal app fully share subs, db, and events. Each has their own view implementation.
 
+## Gene notes
+
+- reloading repl namespace updates app
+- subscription changes requires http://day8.github.io/re-frame/api-re-frame.core/#clear-subscription-cache
+- focus and unfocus event
+- wrap-on: events live around the widget
+- use test-scrollview to get minimally managed scrollbars around window
+    - similarly, you need to handle line wraps yourself
+- this is a wild architecture: state is done by values!
+    - uses lenses
+    - as proof, check out @memframe/text-boxes
+    - here is unfocus: (swap! memframe/text-boxes assoc ::focus nil)
+
+
 ## Screenshots
 
 ### Desktop

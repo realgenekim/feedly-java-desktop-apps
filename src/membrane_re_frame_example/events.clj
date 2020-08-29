@@ -232,7 +232,17 @@
 (reg-event-db
  :set-input-text
  (fn [db [_ id s]]
+   (println ":set-input-text: " id s)
    (assoc db id s)))
+
+(reg-event-db
+  :select-article-id
+  [check-spec-interceptor]
+  (fn [db [_ newv]]
+    (let [id (:id newv)
+          idx (:idx newv)]
+      (println ":select-article-id: args: " idx id)
+      (assoc db :story-num idx))))
 
 (reg-event-db
   :complete-all-toggle

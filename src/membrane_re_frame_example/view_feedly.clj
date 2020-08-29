@@ -165,43 +165,59 @@
 (defn clean [x]
   (:content (html/parse-page x)))
 
+(defn gen-clickable-lines
+  " input: seq of maps {:id xx, :title abc} "
+  [articles]
+  (apply vertical-layout
+    (let [idxarticles (map-indexed (fn [idx itm]
+                                     (merge itm {:idx idx}))
+                                   articles)]
+      (for [a idxarticles]
+        (do
+          ;(println "gen-clickable-lines: a: " a)
+          (on
+            :mouse-down (fn [_]
+                          ;; HELP: [[:select-article-id a]] didn't
+                          (rf/dispatch [:select-article-id a]))
+            (ui/label (:title a))))))))
+
+(def gen-clickable-lines-memo (memoize gen-clickable-lines))
+
 (defn stories
   []
-  (let [sts @(rf/subscribe [:story-text])
-        storynum @(rf/subscribe [:story-num])
-        titles @(rf/subscribe [:story-titles])
-        title (format "%d: %s: %s" storynum
-                      (-> sts :author)
-                      (-> sts :title))
-        datestr (str (java.util.Date. (:published sts)))
-        text (-> sts
-                 :content
-                 :content)
+  (let [sts       @(rf/subscribe [:story-text])
+        storynum  @(rf/subscribe [:story-num])
+        titles    @(rf/subscribe [:story-titles])
+        stories   @(rf/subscribe [:stories])
+        title     (format "%d: %s: %s" storynum
+                          (-> sts :author)
+                          (-> sts :title))
+        datestr   (str (java.util.Date. (:published sts)))
+        text      (-> sts
+                      :content
+                      :content)
         plaintext (clean text)]
-                 ; (subs 0 50))]
-    ;(println "stories: " sts)
-    ;(println "text: " text)
-    ;(ui/label (str "text: " text))
-    ;(basic/textarea :text (str "text: " text)
-    ;                :scroll-bounds [50 50])))
-    ;(basic/scrollview :text (str "text: " text)
-    ;                :scroll-bounds [50 50])))
 
-    (horizontal-layout
-      [(fix-scroll
-         (memframe/get-scrollview
-           :scrollview-list
-           [300 800]
-           (ui/label (clojure.string/join "\n" titles))))]
-      [(vertical-layout
-         (ui/label title)
-         (ui/label datestr)
-         (test-scrollview (text/line-wrap plaintext 80)))])))
+    (vertical-layout
+      (ui/label "test")
+      ;(ui/label (format "%d of %d" storynum (count stories)))
+      (horizontal-layout
+        [(fix-scroll
+           (memframe/get-scrollview
+             :scrollview-list
+             [300 800]
+             (gen-clickable-lines-memo stories)))]
+             ;(ui/label (clojure.string/join "\n" titles))))]
+        [(vertical-layout
+           (ui/label title)
+           (ui/label datestr)
+           (test-scrollview (text/line-wrap plaintext 80)))]))))
     ;(test-scrollview lorem-ipsum)))
     ;(basic/test-scrollview)))
 
 
-
+(comment
+  (re-frame.subs/clear-subscription-cache!))
 
 (defn todo-app
   []
