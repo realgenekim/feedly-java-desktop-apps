@@ -183,25 +183,46 @@
 
 (def gen-clickable-lines-memo (memoize gen-clickable-lines))
 
+(defn filtered-list
+  [stories search]
+  (if (= search "")
+    stories
+    (let [re (re-pattern (format "(?i)%s" search))]
+      (->> stories
+           (filter (fn [x]
+                     (let [s (-> x :content :content)]
+                       ;(println s)
+                       (if s
+                         (re-find re s)
+                         false))))))))
+
+(defn get-story
+  [s]
+  (-> s :content :content))
+
 (defn stories
   []
-  (let [sts       @(rf/subscribe [:story-text])
-        storynum  @(rf/subscribe [:story-num])
-        titles    @(rf/subscribe [:story-titles])
-        stories   @(rf/subscribe [:stories])
-        textbox   @(rf/subscribe [:text])
-        title     (format "%s: %s" storynum
-                          (-> sts :author)
-                          (-> sts :title))
-        datestr   (str (java.util.Date. (:published sts)))
-        text      (-> sts
-                      :content
-                      :content)
-        plaintext (clean text)]
+  (let [sts           @(rf/subscribe [:story-text])
+        storynum      @(rf/subscribe [:story-num])
+        titles        @(rf/subscribe [:story-titles])
+        stories       @(rf/subscribe [:stories])
+        textbox       @(rf/subscribe [:search-text])
+        title         (format "%s: %s" storynum
+                              (-> sts :author)
+                              (-> sts :title))
+        datestr       (str (java.util.Date. (:published sts)))
+        text          (-> sts
+                          :content
+                          :content)
+        plaintext     (clean text)
+
+        filtered-stories (filtered-list stories textbox)]
 
     (vertical-layout
-      (ui/label (format "selected: %d of %d" storynum (count stories)))
-      (ui/label (format "    (search: %s)" textbox))
+      (ui/label (format "selected: %d of %d" storynum (count filtered-stories)))
+      (ui/label (str "Title: " (:title (nth filtered-stories storynum))))
+      (ui/label (format "    (search: \"%s\")" textbox))
+      (ui/spacer 0 10)
       (ui/label title)
       (ui/label datestr)
       (ui/spacer 0 10)
@@ -211,10 +232,11 @@
            (memframe/get-scrollview
              :scrollview-list
              [300 800]
-             (gen-clickable-lines-memo stories)))]
+             (gen-clickable-lines-memo filtered-stories)))]
              ;(ui/label (clojure.string/join "\n" titles))))]
         [(vertical-layout
-           (test-scrollview (text/line-wrap plaintext 80)))]))))
+           (test-scrollview (text/line-wrap (get-story (nth filtered-stories storynum))
+                                            80)))]))))
     ;(test-scrollview lorem-ipsum)))
     ;(basic/test-scrollview)))
 
@@ -239,6 +261,7 @@
             (if (= s :escape)
               (do
                 (println "caught escape!")
+                (rf/dispatch [:set-input-text :todo-input ""])
                 (swap! memframe/text-boxes assoc :membrane.re-frame/focus nil)))
             [[:keydown s]]))))
     (ui/translate

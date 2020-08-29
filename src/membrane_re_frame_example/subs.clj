@@ -119,6 +119,11 @@
     (get db id "")))
 
 (reg-sub
+  :search-text
+  (fn [db _]
+    (:input-text db)))
+
+(reg-sub
   :story-num
   (fn [db [_]]
     (:story-num db)))
