@@ -169,6 +169,7 @@
   []
   (let [sts @(rf/subscribe [:story-text])
         storynum @(rf/subscribe [:story-num])
+        titles @(rf/subscribe [:story-titles])
         title (format "%d: %s: %s" storynum
                       (-> sts :author)
                       (-> sts :title))
@@ -185,10 +186,17 @@
     ;                :scroll-bounds [50 50])))
     ;(basic/scrollview :text (str "text: " text)
     ;                :scroll-bounds [50 50])))
-    [(vertical-layout
-       (ui/label title)
-       (ui/label datestr)
-       (test-scrollview (text/line-wrap plaintext 80)))]))
+
+    (horizontal-layout
+      [(fix-scroll
+         (memframe/get-scrollview
+           :scrollview-list
+           [300 800]
+           (ui/label (clojure.string/join "\n" titles))))]
+      [(vertical-layout
+         (ui/label title)
+         (ui/label datestr)
+         (test-scrollview (text/line-wrap plaintext 80)))])))
     ;(test-scrollview lorem-ipsum)))
     ;(basic/test-scrollview)))
 

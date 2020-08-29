@@ -111,9 +111,9 @@
       (filter filter-fn todos))))
 
 (reg-sub
- :input-text
- (fn [db [_ id]]
-   (get db id "")))
+  :input-text
+  (fn [db [_ id]]
+    (get db id "")))
 
 (reg-sub
   :story-num
@@ -129,6 +129,13 @@
       (nth (:stories db)
            story-num))))
       ;"abc")))
+
+(reg-sub
+  :story-titles
+  (fn [db _]
+    (->> (:stories db)
+         (map :title))))
+
 
 
 
