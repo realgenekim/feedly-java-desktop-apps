@@ -8,6 +8,7 @@
                  [re-frame "1.0.0-rc3"]
                  [com.googlecode.lanterna/lanterna "3.0.2"]
                  [org.clojars.sids/htmlcleaner "2.1"]
+                 [defun "0.3.1"]
                  [commons-lang "2.5"]]
   ;:jvm-opts ["-Dclojure.compiler.direct-linking=true"]
   :aliases
@@ -20,4 +21,5 @@
   :main ^:skip-aot membrane-re-frame-example.term-view
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}
-             :dev {:plugins [[lein-shell "0.5.0"]]}})
+             :dev {:plugins [[lein-shell "0.5.0"]
+                             [com.jakemccrary/lein-test-refresh "0.24.1"]]}})

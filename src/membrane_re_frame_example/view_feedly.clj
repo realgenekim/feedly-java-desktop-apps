@@ -1,22 +1,17 @@
 (ns membrane-re-frame-example.view-feedly
-  (:require [membrane.skia :as skia]
-            [membrane.basic-components :as basic]
-            [membrane.lanterna :as lanterna]
-            [membrane.re-frame :as memframe]
-            [membrane-re-frame-example.events :as events]
-            [membrane-re-frame-example.text :as text]
-            [membrane.ui :as ui
-             :refer
-             [horizontal-layout
-              vertical-layout
-              on]]
-            [re-frame.core :as rf :refer [reg-event-db reg-event-fx inject-cofx path after reg-sub subscribe dispatch]]
-            membrane-re-frame-example.db
-            membrane-re-frame-example.subs
-            membrane-re-frame-example.events
-            [membrane-re-frame-example.htmlcleaner :as html]))
-
-
+  (:require
+    [membrane.basic-components :as basic]
+    [membrane.skia :as skia]
+    [membrane.lanterna :as lanterna]
+    [membrane.re-frame :as memframe]
+    [membrane-re-frame-example.events :as events]
+    [membrane-re-frame-example.text :as text]
+    [membrane.ui :as ui :refer [horizontal-layout vertical-layout on]]
+    [re-frame.core :as rf :refer [reg-event-db reg-event-fx inject-cofx path after reg-sub subscribe dispatch]]
+    membrane-re-frame-example.db
+    membrane-re-frame-example.subs
+    membrane-re-frame-example.events
+    [membrane-re-frame-example.htmlcleaner :as html]))
 
 
 
@@ -183,18 +178,6 @@
 
 (def gen-clickable-lines-memo (memoize gen-clickable-lines))
 
-(defn filtered-list
-  [stories search]
-  (if (= search "")
-    stories
-    (let [re (re-pattern (format "(?i)%s" search))]
-      (->> stories
-           (filter (fn [x]
-                     (let [s (-> x :content :content)]
-                       ;(println s)
-                       (if s
-                         (re-find re s)
-                         false))))))))
 
 (defn get-story
   [s]
@@ -216,7 +199,7 @@
                           :content)
         plaintext     (clean text)
 
-        filtered-stories (filtered-list stories textbox)]
+        filtered-stories @(rf/subscribe [:filtered-stories])]
 
     (vertical-layout
       (ui/label (format "selected: %d of %d" storynum (count filtered-stories)))

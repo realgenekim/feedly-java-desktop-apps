@@ -1,5 +1,7 @@
 (ns membrane-re-frame-example.subs
-  (:require [re-frame.core :refer [reg-sub subscribe]]))
+  (:require
+    [membrane-re-frame-example.search :as search]
+    [re-frame.core :refer [reg-sub subscribe]]))
 
 ;; -------------------------------------------------------------------------------------
 ;; Layer 2
@@ -148,6 +150,38 @@
   :stories
   (fn [db _]
     (:stories db)))
+
+(defn filter-active?
+  " returns true: function of (:input-text db) "
+  [db]
+  (let [input         (:input-text db)
+        filter-active (case input
+                        ; false if nil or blank
+                        nil false
+                        "" false
+                        true)]
+    filter-active))
+
+(reg-sub
+  :filtered-stories
+  (fn [db _]
+    (let [input         (:input-text db)
+          filtered-list (if (not filter-active?)
+                          '()
+                          (search/filtered-list (:stories db) input))]
+      filtered-list)))
+
+
+
+
+(reg-sub
+  :current-story
+  (fn [db _]
+    (let [filtered (:filtered-stories db)
+          raw (:stories db)
+          story-num (:story-num db)])))
+
+
 
 
 
