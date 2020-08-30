@@ -48,6 +48,8 @@
 ;      (read-string)))
 
 (defn read-file []
+  ; "ccsp2.txt"
+  ; "clojure.txt"
   (-> (slurp (str "/Users/genekim/src.local/feedly" "/" "clojure.txt"))
       (read-string)))
 

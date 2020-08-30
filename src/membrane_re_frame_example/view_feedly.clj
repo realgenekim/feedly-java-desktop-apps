@@ -37,6 +37,7 @@
        (on
         :change
         (fn [s]
+          (println ":change")
           [[:set-input-text input-id s]])
         (memframe/get-text-box input-id text)))))))
 
@@ -183,27 +184,31 @@
   [s]
   (-> s :content :content))
 
+(defn get-title
+  [s]
+  (:title s))
+
 (defn stories
   []
-  (let [sts           @(rf/subscribe [:story-text])
-        storynum      @(rf/subscribe [:story-num])
-        titles        @(rf/subscribe [:story-titles])
-        stories       @(rf/subscribe [:stories])
-        textbox       @(rf/subscribe [:search-text])
-        title         (format "%s: %s" storynum
-                              (-> sts :author)
-                              (-> sts :title))
-        datestr       (str (java.util.Date. (:published sts)))
-        text          (-> sts
-                          :content
-                          :content)
-        plaintext     (clean text)
+  (let [curr-story       @(rf/subscribe [:current-story])
+        text              (get-story curr-story)
+        filter-active?   @(rf/subscribe [:filter-active?])
+        storynum         @(rf/subscribe [:story-num])
+        titles           @(rf/subscribe [:story-titles])
+        stories          @(rf/subscribe [:active-stories])
+        textbox          @(rf/subscribe [:search-text])
+        title            (format "%s: %s" storynum
+                                 (-> curr-story :author)
+                                 (-> curr-story :title))
+        datestr          (str (java.util.Date. (:published curr-story)))
+        plaintext        (clean text)]
 
-        filtered-stories @(rf/subscribe [:filtered-stories])]
+    (println "filtered? " filter-active?)
+    (println "# stories: " (count stories))
 
     (vertical-layout
-      (ui/label (format "selected: %d of %d" storynum (count filtered-stories)))
-      (ui/label (str "Title: " (:title (nth filtered-stories storynum))))
+      (ui/label (format "selected: %d of %d" storynum (count titles)))
+      (ui/label (str "Title: " (get-title curr-story)))
       (ui/label (format "    (search: \"%s\")" textbox))
       (ui/spacer 0 10)
       (ui/label title)
@@ -215,11 +220,10 @@
            (memframe/get-scrollview
              :scrollview-list
              [300 800]
-             (gen-clickable-lines-memo filtered-stories)))]
+             (gen-clickable-lines stories)))]
              ;(ui/label (clojure.string/join "\n" titles))))]
         [(vertical-layout
-           (test-scrollview (text/line-wrap (get-story (nth filtered-stories storynum))
-                                            80)))]))))
+           (test-scrollview (text/line-wrap plaintext 80)))]))))
     ;(test-scrollview lorem-ipsum)))
     ;(basic/test-scrollview)))
 
@@ -257,7 +261,7 @@
         (task-list))
       (ui/spacer 0 20)
       (footer-controls)
-      (stories)))))
+      [(stories)]))))
 
 
 (println "global hello")

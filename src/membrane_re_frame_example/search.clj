@@ -21,3 +21,17 @@
   " filtered-seq raw-seq story-num "
   ([fr :guard #(empty? %) rs story-num] (nth rs story-num))
   ([fr rs story-num] (nth fr story-num)))
+
+(defun story-titles
+  " filtered-seq raw-seq "
+  ([fr :guard #(empty? %) rs]
+   (map :title rs))
+  ([fr rs]
+   (map :title fr)))
+
+(defun active-stories
+  " filtered-seq raw-seq story-num "
+  ([fr :guard #(empty? %) rs]
+   rs)
+  ([fr rs]
+   fr))

@@ -118,11 +118,13 @@
 (reg-sub
   :input-text
   (fn [db [_ id]]
+    ;(println "sub: input-text")
     (get db id "")))
 
 (reg-sub
   :search-text
   (fn [db _]
+    ;(println "sub: search-text")
     (:input-text db)))
 
 (reg-sub
@@ -131,24 +133,8 @@
     (:story-num db)))
 
 (reg-sub
-  :story-text
-  (fn [db _]
-    (let [story-num (:story-num db)]
-      ;(println "sub: story-num: " story-num)
-      ;(println "sub: story: " (first (:stories db)))
-      (nth (:stories db)
-           story-num))))
-      ;"abc")))
-
-(reg-sub
-  :story-titles
-  (fn [db _]
-    (->> (:stories db)
-         (map :title))))
-
-(reg-sub
   :stories
-  (fn [db _]
+  (fn [db [_]]
     (:stories db)))
 
 (defn filter-active?
@@ -163,23 +149,50 @@
     filter-active))
 
 (reg-sub
-  :filtered-stories
+  :filter-active?
   (fn [db _]
-    (let [input         (:input-text db)
-          filtered-list (if (not filter-active?)
+    (filter-active? db)))
+
+(reg-sub
+  :filtered-stories
+  (fn [query-v _]
+    [(subscribe [:filter-active?])
+     (subscribe [:input-text])
+     (subscribe [:stories])])
+  (fn [[f? input stories] _]
+    (println "sub: filtered-stories: " f? input (count stories))
+    (let [filtered-list (if f?
                           '()
-                          (search/filtered-list (:stories db) input))]
+                          (search/filtered-list stories input))]
       filtered-list)))
 
+(reg-sub
+  :active-stories
+  (fn [query-v _]
+    [(subscribe [:filter-active?])
+     (subscribe [:filtered-stories])
+     (subscribe [:stories])])
+  (fn [[f? filtered raw] _]
+    (search/active-stories filtered raw)))
 
-
+(reg-sub
+  :story-titles
+  (fn [query-v _]
+    [(subscribe [:filter-active?])
+     (subscribe [:filtered-stories])
+     (subscribe [:stories])])
+  (fn [[f? fs rs] _]
+    (search/story-titles fs rs)))
 
 (reg-sub
   :current-story
-  (fn [db _]
-    (let [filtered (:filtered-stories db)
-          raw (:stories db)
-          story-num (:story-num db)])))
+  (fn [query-v _]
+    [(subscribe [:filter-active?])
+     (subscribe [:filtered-stories])
+     (subscribe [:stories])
+     (subscribe [:story-num])])
+  (fn [[f? filtered raw story-num] _]
+    (search/current-story filtered raw story-num)))
 
 
 
