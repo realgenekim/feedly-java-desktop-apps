@@ -11,7 +11,8 @@
     membrane-re-frame-example.db
     membrane-re-frame-example.subs
     membrane-re-frame-example.events
-    [membrane-re-frame-example.htmlcleaner :as html]))
+    [membrane-re-frame-example.htmlcleaner :as html]
+    [membrane-re-frame-example.search :as search]))
 
 
 
@@ -194,7 +195,6 @@
         text              (get-story curr-story)
         filter-active?   @(rf/subscribe [:filter-active?])
         storynum         @(rf/subscribe [:story-num])
-        titles           @(rf/subscribe [:story-titles])
         stories          @(rf/subscribe [:active-stories])
         textbox          @(rf/subscribe [:search-text])
         title            (format "%s: %s" storynum
@@ -207,7 +207,8 @@
     (println "# stories: " (count stories))
 
     (vertical-layout
-      (ui/label (format "selected: %d of %d" storynum (count titles)))
+      (ui/label (str "filtered? " filter-active?))
+      (ui/label (format "selected: %d of %d" storynum (count stories)))
       (ui/label (str "Title: " (get-title curr-story)))
       (ui/label (format "    (search: \"%s\")" textbox))
       (ui/spacer 0 10)
