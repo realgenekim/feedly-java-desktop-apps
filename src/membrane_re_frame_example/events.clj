@@ -79,15 +79,6 @@
                         ])            ;; write todos to localstore  (after)
 
 
-;; -- Helpers -----------------------------------------------------------------
-
-(defn allocate-next-id
-  "Returns the next todo id.
-  Assumes todos are sorted.
-  Returns one more than the current largest id."
-  [todos]
-  ((fnil inc 0) (last (keys todos))))
-
 
 ;; -- Event Handlers ----------------------------------------------------------
 
@@ -178,25 +169,6 @@
     new-showing-value))                  ;; return new state for the path
 
 
-;; usage:  (dispatch [:add-todo  "a description string"])
-(reg-event-db                     ;; given the text, create a new todo
-  :add-todo
-
-  ;; Use the standard interceptors, defined above, which we
-  ;; use for all todos-modifying event handlers. Looks after
-  ;; writing todos to LocalStore, etc.
-  todo-interceptors
-
-  ;; The event handler function.
-  ;; The "path" interceptor in `todo-interceptors` means 1st parameter is the
-  ;; value at `:todos` path within `db`, rather than the full `db`.
-  ;; And, further, it means the event handler returns just the value to be
-  ;; put into the `[:todos]` path, and not the entire `db`.
-  ;; So, again, a path interceptor acts like clojure's `update-in`
-  (fn [todos [_ text]]
-    (let [id (allocate-next-id todos)]
-
-      (assoc todos id {:id id :title text :done false}))))
 
 
 (reg-event-db
@@ -237,6 +209,20 @@
              :input-text s)))
 
 (reg-event-db
+  :set-search-text
+  (fn [db [_ id s]]
+    (println ":set-search-text: " id s)
+    (assoc db id s
+              :searchbox-text s)))
+
+(reg-event-db
+  :search
+  (fn [db [_ id]]
+    (println ":search: " (:searchbox-text db))
+    (assoc db :filter-text (:searchbox-text db)
+              :searchbox-text "")))
+
+(reg-event-db
   :select-article-id
   [check-spec-interceptor]
   (fn [db [_ newv]]
@@ -245,11 +231,3 @@
       (println ":select-article-id: args: " idx id)
       (assoc db :story-num idx))))
 
-(reg-event-db
-  :complete-all-toggle
-  todo-interceptors
-  (fn [todos _]
-    (let [new-done (not-every? :done (vals todos))]   ;; work out: toggle true or false?
-      (reduce #(assoc-in %1 [%2 :done] new-done)
-              todos
-              (keys todos)))))

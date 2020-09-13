@@ -19,20 +19,21 @@
 ;; None of this is strictly necessary. It could be omitted. But we find it
 ;; good practice.
 
-(s/def ::id int?)
-(s/def ::title string?)
-(s/def ::done boolean?)
-(s/def ::todo (s/keys :req-un [::id ::title ::done]))
-(s/def ::todos (s/and                                       ;; should use the :kind kw to s/map-of (not supported yet)
-                 (s/map-of ::id ::todo)                     ;; in this map, each todo is keyed by its :id
-                 #(instance? clojure.lang.PersistentTreeMap %)           ;; is a sorted-map (not just a map)
-                 ))
-(s/def ::showing                                            ;; what todos are shown to the user?
-  #{:all                                                    ;; all todos are shown
-    :active                                                 ;; only todos whose :done is false
-    :done                                                   ;; only todos whose :done is true
-    })
-(s/def ::db (s/keys :req-un [::todos ::showing]))
+(s/def ::stories sequential?)
+;(s/def ::id int?)
+;(s/def ::title string?)
+;(s/def ::done boolean?)
+;(s/def ::todo (s/keys :req-un [::id ::title ::done]))
+;(s/def ::todos (s/and                                       ;; should use the :kind kw to s/map-of (not supported yet)
+;                 (s/map-of ::id ::todo)                     ;; in this map, each todo is keyed by its :id
+;                 #(instance? clojure.lang.PersistentTreeMap %)           ;; is a sorted-map (not just a map)
+;                 ))
+;(s/def ::showing                                            ;; what todos are shown to the user?
+;  #{:all                                                    ;; all todos are shown
+;    :active                                                 ;; only todos whose :done is false
+;    :done                                                   ;; only todos whose :done is true
+;    })
+(s/def ::db (s/keys :req-un [::stories]))
 
 ;; -- Default app-db Value  ---------------------------------------------------
 ;;
@@ -58,7 +59,7 @@
    :todos   (sorted-map)  ;; an empty list of todos. Use the (int) :id as the key
    :showing :all
    :story-num 0
-   :stories (read-file)
+   :stories (take 10 (read-file))
    })        ;; show all todos
 
 (comment

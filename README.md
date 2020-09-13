@@ -18,6 +18,8 @@ Both the desktop and the terminal app fully share subs, db, and events. Each has
     - uses lenses
     - as proof, check out @memframe/text-boxes
     - here is unfocus: (swap! memframe/text-boxes assoc ::focus nil)
+    
+- when updating subscriptions, call `(re-frame.subs/clear-subscription-cache!)`
 
 
 ## Screenshots

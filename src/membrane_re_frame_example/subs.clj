@@ -3,129 +3,21 @@
     [membrane-re-frame-example.search :as search]
     [re-frame.core :refer [reg-sub subscribe]]))
 
-;; -------------------------------------------------------------------------------------
-;; Layer 2
-;;
-;; See https://day8.github.io/re-frame/subscriptions/
-;;
-;; Layer 2 query functions are "extractors". They take from `app-db`
-;; and don't do any further computation on the extracted values. Any further
-;; computation should happen in Layer 3.
-;; Why?  It is an efficiency thing. Every Layer 2 subscription will rerun any time
-;; that `app-db` changes (in any way). As a result, we want Layer 2 to be trivial.
-;;
-(reg-sub
-  :showing          ;; usage:   (subscribe [:showing])
-  (fn [db _]        ;; db is the (map) value stored in the app-db atom
-    (:showing db))) ;; extract a value from the application state
-
-
-;; Next, the registration of a similar handler is done in two steps.
-;; First, we `defn` a pure handler function.  Then, we use `reg-sub` to register it.
-;; Two steps. This is different to that first registration, above, which was done
-;; in one step using an anonymous function.
-(defn sorted-todos
-  [db _]
-  (:todos db))
-(reg-sub :sorted-todos sorted-todos)    ;; usage: (subscribe [:sorted-todos])
-
-(reg-sub
-  :text
-  (fn [db _]
-    (:text db)))
 
 (comment
   (re-frame.subs/clear-subscription-cache!))
 
-;; -------------------------------------------------------------------------------------
-;; Layer 3
-;;
-;; See https://day8.github.io/re-frame/subscriptions/
-;;
-;; A subscription handler is a function which is re-run when its input signals
-;; change. Each time it is rerun, it produces a new output (return value).
-;;
-;; In the simple case, app-db is the only input signal, as was the case in the two
-;; simple subscriptions above. But many subscriptions are not directly dependent on
-;; app-db, and instead, depend on a value derived from app-db.
-;;
-;; Such handlers represent "intermediate nodes" in a signal graph.  New values emanate
-;; from app-db, and flow out through a signal graph, into and out of these intermediate
-;; nodes, before a leaf subscription delivers data into views which render data as hiccup.
-;;
-;; When writing and registering the handler for an intermediate node, you must nominate
-;; one or more input signals (typically one or two).
-;;
-;; reg-sub allows you to supply:
-;;
-;;   1. a function which returns the input signals. It can return either a single signal or
-;;      a vector of signals, or a map where the values are the signals.
-;;
-;;   2. a function which does the computation. It takes input values and produces a new
-;;      derived value.
-;;
-;; In the two simple examples at the top, we only supplied the 2nd of these functions.
-;; But now we are dealing with intermediate (layer 3) nodes, we'll need to provide both fns.
-;;
 (reg-sub
- :todos ;; usage:   (subscribe [:todos])
-
- ;; This function returns the input signals.
- ;; In this case, it returns a single signal.
- ;; Although not required in this example, it is called with two parameters
- ;; being the two values supplied in the originating `(subscribe X Y)`.
- ;; X will be the query vector and Y is an advanced feature and out of scope
- ;; for this explanation.
- (fn [query-v _ & args]
-   (subscribe [:sorted-todos])) ;; returns a single input signal
-
- ;; This 2nd fn does the computation. Data values in, derived data out.
- ;; It is the same as the two simple subscription handlers up at the top.
- ;; Except they took the value in app-db as their first argument and, instead,
- ;; this function takes the value delivered by another input signal, supplied by the
- ;; function above: (subscribe [:sorted-todos])
- ;;
- ;; Subscription handlers can take 3 parameters:
- ;;  - the input signals (a single item, a vector or a map)
- ;;  - the query vector supplied to query-v  (the query vector argument
- ;; to the "subscribe") and the 3rd one is for advanced cases, out of scope for this discussion.
- (fn [sorted-todos query-v & args]
-   (vals sorted-todos)))
-
-;; So here we define the handler for another intermediate node.
-;; This time the computation involves two input signals.
-;; As a result note:
-;;   - the first function (which returns the signals) returns a 2-vector
-;;   - the second function (which is the computation) destructures this 2-vector as its first parameter
-(reg-sub
-  :visible-todos
-
-  ;; Signal Function
-  ;; Tells us what inputs flow into this node.
-  ;; Returns a vector of two input signals (in this case)
-  (fn [query-v _]
-    [(subscribe [:todos])
-     (subscribe [:showing])])
-
-  ;; Computation Function
-  (fn [[todos showing] _]   ;; that 1st parameter is a 2-vector of values
-    (let [filter-fn (case showing
-                      :active (complement :done)
-                      :done   :done
-                      :all    identity)]
-      (filter filter-fn todos))))
-
-(reg-sub
-  :input-text
-  (fn [db [_ id]]
-    ;(println "sub: input-text")
-    (get db id "")))
-
-(reg-sub
-  :search-text
+  :searchbox-text
   (fn [db _]
     ;(println "sub: search-text")
-    (:input-text db)))
+    (:searchbox-text db)))
+
+(reg-sub
+  :filter-text
+  (fn [db _]
+    ;(println "sub: search-text")
+    (:filter-text db)))
 
 (reg-sub
   :story-num
@@ -140,12 +32,13 @@
 (defn filter-active?
   " returns true: function of (:input-text db) "
   [db]
-  (let [input         (:input-text db)
+  (let [input         (:filter-text db)
         filter-active (case input
                         ; false if nil or blank
                         nil false
                         "" false
                         true)]
+    (println "filter-active?: input: " input)
     filter-active))
 
 (reg-sub
@@ -157,13 +50,14 @@
   :filtered-stories
   (fn [query-v _]
     [(subscribe [:filter-active?])
-     (subscribe [:input-text])
+     (subscribe [:filter-text])
      (subscribe [:stories])])
   (fn [[f? input stories] _]
     (println "sub: filtered-stories: " f? input (count stories))
-    (let [filtered-list (if f?
+    (let [filtered-list (if (not f?)
                           '()
                           (search/filtered-list stories input))]
+      ;(println "sub: filtered-stories: count filtered: " (count filtered-list))
       filtered-list)))
 
 (reg-sub
@@ -173,6 +67,7 @@
      (subscribe [:filtered-stories])
      (subscribe [:stories])])
   (fn [[f? filtered raw] _]
+    (println "sub: active-stories")
     (search/active-stories filtered raw)))
 
 (reg-sub
@@ -192,6 +87,7 @@
      (subscribe [:stories])
      (subscribe [:story-num])])
   (fn [[f? filtered raw story-num] _]
+    (println "subs: :current-story: " f? (count filtered) (count raw) story-num)
     (search/current-story filtered raw story-num)))
 
 
