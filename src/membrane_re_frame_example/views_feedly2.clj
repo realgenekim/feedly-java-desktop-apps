@@ -5,22 +5,14 @@
     [membrane.lanterna :as lanterna]
     [membrane.re-frame :as memframe]
     [membrane-re-frame-example.events :as events]
-    [membrane.ui :as ui
-     :refer
-     [horizontal-layout
-      vertical-layout
-      on]]
+    [membrane.ui :as ui :refer [horizontal-layout vertical-layout on]]
     [re-frame.core :as rf :refer [reg-event-db reg-event-fx inject-cofx path after reg-sub subscribe dispatch]]
-
     membrane-re-frame-example.db
     membrane-re-frame-example.subs
     membrane-re-frame-example.events
     [membrane-re-frame-example.text :as text]
     [membrane-re-frame-example.htmlcleaner :as html]
     [membrane-re-frame-example.search :as search]))
-
-
-
 
 
 (defn search-input [{:keys [id title on-save on-stop]}]
@@ -97,10 +89,10 @@
   []
   (let [curr-story       @(rf/subscribe [:current-story])
         text              (get-story curr-story)
-        filter-active?   @(rf/subscribe [:filter-active?])
         storynum         @(rf/subscribe [:story-num])
         stories          @(rf/subscribe [:active-stories])
         active-filter    @(rf/subscribe [:filter-text])
+        filter-active?   (not (empty? active-filter))
         title            (format "%s: %s" storynum
                                  (-> curr-story :author)
                                  (-> curr-story :title))
@@ -111,15 +103,14 @@
     ;(println "# stories: " (count stories))
 
     (vertical-layout
-      (ui/label (str "filtered? " filter-active?))
+      (ui/label (str "filtered? " filter-active?
+                     (format " (\"%s\")" active-filter)))
       (ui/label (format "selected: %d of %d" storynum (count stories)))
-      (ui/label (str "Title: " (get-title curr-story)))
-      (ui/label (format "    (search: \"%s\")" active-filter))
+
       (ui/spacer 0 10)
-      (ui/label title)
+      (ui/label (str "Article title: " title ": " (get-title curr-story)))
       (ui/label datestr)
       (ui/spacer 0 10)
-      ;(ui/label (format "%d of %d" storynum (count stories)))
       (horizontal-layout
         [(fix-scroll
            (memframe/get-scrollview
@@ -135,8 +126,6 @@
 (comment
   (re-frame.subs/clear-subscription-cache!))
 
-
-
 (defn todo-app
   []
   (ui/translate
@@ -144,17 +133,6 @@
     (vertical-layout
       (search-entry)
       [(stories)])))
-      ;(task-entry)
-      ;(ui/spacer 0 20)
-      ;(when (seq @(subscribe [:todos]))
-      ;    (task-list))
-      ;(ui/spacer 0 20)
-      ;(footer-controls))))
-
-
-
-
-(println "global hello")
 
 (defn -main [& args]
   (println "main starting")
@@ -163,19 +141,7 @@
   (skia/run
     #(memframe/re-frame-app (#'todo-app))))
 
-                       ;(ui/label "hello")))))
-  ;(skia/run #(memframe/re-frame-app (todo-app))))
-;#_(ui/mouse-down
- ;(ui/translate 50 50
- ;              (on
- ;               :mouse-down
- ;               (fn [[x y]]
- ;                 (prn x y))
- ;               (ui/button "asdfasdfasfdaf")))
- ;[51 51])
-
 (comment
-
   (defn -main [& args]
     (dispatch [:initialize-db])
     (lanterna/run #(memframe/re-frame-app

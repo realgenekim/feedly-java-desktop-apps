@@ -53,13 +53,14 @@
   ; "clojure.txt"
   (-> (slurp (str "/Users/genekim/src.local/feedly" "/" "clojure.txt"))
       (read-string)))
+      ;(take 10)))
 
 (def default-db           ;; what gets put into app-db by default.
   {:text ""
    :todos   (sorted-map)  ;; an empty list of todos. Use the (int) :id as the key
    :showing :all
    :story-num 0
-   :stories (take 10 (read-file))
+   :stories (read-file)
    })        ;; show all todos
 
 (comment

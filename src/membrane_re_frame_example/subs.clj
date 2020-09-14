@@ -31,63 +31,54 @@
 
 (defn filter-active?
   " returns true: function of (:input-text db) "
-  [db]
-  (let [input         (:filter-text db)
-        filter-active (case input
+  [input]
+  (let [filter-active (case input
                         ; false if nil or blank
                         nil false
                         "" false
                         true)]
-    (println "filter-active?: input: " input)
+    ;(println "filter-active?: input: " input)
     filter-active))
-
-(reg-sub
-  :filter-active?
-  (fn [db _]
-    (filter-active? db)))
 
 (reg-sub
   :filtered-stories
   (fn [query-v _]
-    [(subscribe [:filter-active?])
-     (subscribe [:filter-text])
+    [(subscribe [:filter-text])
      (subscribe [:stories])])
-  (fn [[f? input stories] _]
-    (println "sub: filtered-stories: " f? input (count stories))
-    (let [filtered-list (if (not f?)
-                          '()
-                          (search/filtered-list stories input))]
-      ;(println "sub: filtered-stories: count filtered: " (count filtered-list))
-      filtered-list)))
+  (fn [[input stories] _]
+    (let [f? (filter-active? input)]
+      ;(println "sub: filtered-stories: " f? input (count stories))
+      (let [filtered-list (if (not f?)
+                            '()
+                            (search/filtered-list stories input))]
+        ;(println "sub: filtered-stories: count filtered: " (count filtered-list))
+        filtered-list))))
 
 (reg-sub
   :active-stories
   (fn [query-v _]
-    [(subscribe [:filter-active?])
-     (subscribe [:filtered-stories])
+    [(subscribe [:filtered-stories])
      (subscribe [:stories])])
-  (fn [[f? filtered raw] _]
-    (println "sub: active-stories")
+  (fn [[filtered raw] _]
+    ;(println "sub: active-stories")
     (search/active-stories filtered raw)))
 
 (reg-sub
   :story-titles
   (fn [query-v _]
-    [(subscribe [:filter-active?])
-     (subscribe [:filtered-stories])
+    [(subscribe [:filtered-stories])
      (subscribe [:stories])])
-  (fn [[f? fs rs] _]
+  (fn [[fs rs] _]
     (search/story-titles fs rs)))
 
 (reg-sub
   :current-story
   (fn [query-v _]
-    [(subscribe [:filter-active?])
-     (subscribe [:filtered-stories])
+    [(subscribe [:filtered-stories])
      (subscribe [:stories])
      (subscribe [:story-num])])
-  (fn [[f? filtered raw story-num] _]
-    (println "subs: :current-story: " f? (count filtered) (count raw) story-num)
+  (fn [[filtered raw story-num] _]
+    ;(println "sub: :current-story: " (count filtered) (count raw) story-num)
     (search/current-story filtered raw story-num)))
 
 
