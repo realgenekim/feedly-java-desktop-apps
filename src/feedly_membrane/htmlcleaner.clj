@@ -1,4 +1,4 @@
-(ns membrane-re-frame-example.htmlcleaner
+(ns feedly-membrane.htmlcleaner
 ;(:require)
 ;[clojure.contrib.logging :as log])
   (:import

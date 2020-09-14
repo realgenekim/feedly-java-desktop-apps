@@ -1,18 +1,14 @@
-(ns membrane-re-frame-example.views-feedly2
+(ns feedly-membrane.view
   (:require
     [membrane.skia :as skia]
     [membrane.basic-components :as basic]
     [membrane.lanterna :as lanterna]
     [membrane.re-frame :as memframe]
-    [membrane-re-frame-example.events :as events]
     [membrane.ui :as ui :refer [horizontal-layout vertical-layout on]]
     [re-frame.core :as rf :refer [reg-event-db reg-event-fx inject-cofx path after reg-sub subscribe dispatch]]
-    membrane-re-frame-example.db
-    membrane-re-frame-example.subs
-    membrane-re-frame-example.events
-    [membrane-re-frame-example.text :as text]
-    [membrane-re-frame-example.htmlcleaner :as html]
-    [membrane-re-frame-example.search :as search]))
+    [feedly-membrane.text :as text]
+    [feedly-membrane.events :as events]
+    [feedly-membrane.htmlcleaner :as html]))
 
 
 (defn search-input [{:keys [id title on-save on-stop]}]

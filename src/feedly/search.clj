@@ -1,4 +1,4 @@
-(ns membrane-re-frame-example.search
+(ns feedly.search
   (:require
     [defun.core :refer [defun]]))
 

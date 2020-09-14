@@ -1,10 +1,7 @@
-(ns membrane-re-frame-example.core
+(ns feedly-membrane.core
   (:require [membrane.re-frame :as memframe]
             [membrane.skia :as skia])
   (:gen-class))
-
-
-
 
 
 (defn -main

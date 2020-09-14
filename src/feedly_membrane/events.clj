@@ -1,8 +1,8 @@
-(ns membrane-re-frame-example.events
+(ns feedly-membrane.events
   (:require
-    [membrane-re-frame-example.db :refer [default-db]]
+    [clojure.spec.alpha :as s]
     [re-frame.core :refer [reg-event-db reg-event-fx inject-cofx path after]]
-    [clojure.spec.alpha :as s]))
+    [feedly-membrane.db :refer [default-db]]))
 
 
 
@@ -13,7 +13,8 @@
     (throw (ex-info (str "spec check failed: " (s/explain-str a-spec db)) {}))))
 
 ;; now we create an interceptor using `after`
-(def check-spec-interceptor (after (partial check-and-throw :membrane-re-frame-example.db/db)))
+(def check-spec-interceptor
+  (after (partial check-and-throw :feedly-membrane.db/db)))
 (reg-event-fx                 ;; part of the re-frame API
   :initialize-db              ;; event id being handled
 

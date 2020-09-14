@@ -1,4 +1,4 @@
-(defproject membrane-re-frame-example "0.1.0-SNAPSHOT"
+(defproject feedly-membrane "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
@@ -18,7 +18,7 @@
     "--initialize-at-build-time" "--no-server" "--no-fallback"
     "-jar" "./target/uberjar/${:uberjar-name:-${:name}-${:version}-standalone.jar}"
     "-H:Name=./target/${:name}"]}
-  :main ^:skip-aot membrane-re-frame-example.term-view
+  :main ^:skip-aot feedly-membrane.view
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}
              :dev {:plugins [[lein-shell "0.5.0"]
