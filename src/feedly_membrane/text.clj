@@ -1,4 +1,4 @@
-(ns membrane-re-frame-example.text)
+(ns feedly-membrane.text)
 
 (defn line-wrap
   " input: s: string
