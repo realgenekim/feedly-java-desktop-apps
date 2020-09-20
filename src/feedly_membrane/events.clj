@@ -48,8 +48,7 @@
   :set-search-text
   (fn [db [_ id s]]
     (println ":set-search-text: " id s)
-    (assoc db id s
-              :searchbox-text s)))
+    (assoc db :searchbox-text s)))
 
 (reg-event-db
   :search
