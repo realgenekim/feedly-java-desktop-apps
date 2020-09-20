@@ -13,7 +13,7 @@
 
 (defn search-input [{:keys [id title on-save on-stop]}]
   (let [input-id [:search-input id]
-        text     @(rf/subscribe [:searchbox-text input-id])]
+        text     @(rf/subscribe [:search-text input-id])]
     (horizontal-layout
       (ui/button "Search"
                  (fn []
