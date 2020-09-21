@@ -1,0 +1,15 @@
+{:deps    {defun                        {:mvn/version "0.3.1"}
+           org.clojars.sids/htmlcleaner {:mvn/version "2.1"}
+           commons-lang                 {:mvn/version "2.5"}}
+ :paths   ["src"]
+ :aliases {:membrane
+           {:extra-deps
+                       {com.phronemophobic/membrane      {:mvn/version "0.9.14-beta"}
+                        re-frame                         {:mvn/version "1.0.0-rc3"}
+                        com.googlecode.lanterna/lanterna {:mvn/version "3.0.2"}}
+            :main-opts ["-m" "feedly-membrane.view"]}
+
+           :cljfx
+           {:extra-deps
+                       {cljfx {:mvn/version "1.7.10"}}
+            :main-opts ["-m" "feedly-cljfx.views"]}}}

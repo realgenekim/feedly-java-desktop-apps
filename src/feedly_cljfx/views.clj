@@ -1,13 +1,15 @@
-(ns views
+(ns feedly-cljfx.views
   (:require
     [cljfx.api :as fx]
     [cljfx.ext.list-view :as fx.ext.list-view]
     [cljfx.lifecycle :as lifecycle]
     [cljfx.mutator :as mutator]
     [cljfx.prop :as prop]
-    [feedly :as feedly]
-    [stories]
-    [my-subs :as subs])
+    [feedly.search :as search]
+    [feedly-membrane.htmlcleaner :as htmlcleaner]
+    [feedly-cljfx.feedly :as feedly]
+    [feedly-cljfx.events :as events]
+    [feedly-cljfx.my-subs :as subs])
   (:import [javafx.scene.web WebView]
            [javafx.scene.input KeyCode KeyEvent]
            [javafx.application Platform]
@@ -16,13 +18,13 @@
 
 (defn left-pane [{:keys [fx/context]}]
   ;(println "left-pane: " context)
-  (let [stories (fx/sub-val context :stories)
-        filtered (fx/sub-ctx context subs/filtered-list)
-        selected (fx/sub-val context :title-selected)
+  (let [stories   (fx/sub-val context :stories)
+        filtered  (fx/sub-ctx context subs/filtered-list)
+        selected  (fx/sub-val context :title-selected)
         show-list (search/active-stories filtered stories)]
     {:fx/type fx.ext.list-view/with-selection-props
      :props {:selection-mode :single
-             :on-selected-index-changed {:event/type :events/select-title-num}
+             :on-selected-index-changed {:event/type ::events/select-title-num}
              :selected-index selected}
      ;:on-selected-item-changed {:event/type ::list-click}
      :desc {
@@ -107,12 +109,12 @@
            :text-formatter {:fx/type :text-formatter
                             :value-converter :default
                             :value value
-                            :on-value-changed {:event/type :events/search-text-changed}}}})
+                            :on-value-changed {:event/type ::events/search-text-changed}}}})
 
 (defn stats-header [{:keys [fx/context]}]
-  (let [stories (fx/sub-val context :stories)
+  (let [stories   (fx/sub-val context :stories)
         title-num (fx/sub-val context :title-selected)
-        filtered (fx/sub-ctx context subs/filtered-list)]
+        filtered  (fx/sub-ctx context subs/filtered-list)]
     {:fx/type :v-box
      :children [{:fx/type :label
                  :text (format "# of stories: %d (selected=%d); filtered: %d"
@@ -126,12 +128,12 @@
    :height 400
    :showing true
    :scene {:fx/type :scene
-           :accelerators {[:j] {:event/type :events/next-story}
-                          [:k] {:event/type :events/prev-story}}
+           :accelerators {[:j] {:event/type ::events/next-story}
+                          [:k] {:event/type ::events/prev-story}}
            :root {:fx/type :v-box
                   :padding 40
                   :spacing 20
-                  :children [{:fx/type views/name-input
+                  :children [{:fx/type name-input
                               :value ""}
                              {:fx/type stats-header}
                              {:fx/type :grid-pane
@@ -143,6 +145,6 @@
                                                     :percent-width (* 3 100/4)}]
                               :row-constraints [{:fx/type :row-constraints
                                                  :percent-height 100}]
-                              :children [{:fx/type views/left-pane}
-                                         {:fx/type views/right-pane2
+                              :children [{:fx/type left-pane}
+                                         {:fx/type right-pane2
                                           :grid-pane/column 1}]}]}}})
