@@ -6,7 +6,12 @@ The code is largely derived from https://github.com/day8/re-frame/tree/master/ex
 
 Both the desktop and the terminal app fully share subs, db, and events. Each has their own view implementation.
 
-## Gene notes
+# To Run
+
+- membrane: `make membrane`
+- cljfx: `make cljfx`
+
+## Gene notes on Membrane implementation
 
 - reloading repl namespace updates app
 - subscription changes requires http://day8.github.io/re-frame/api-re-frame.core/#clear-subscription-cache
