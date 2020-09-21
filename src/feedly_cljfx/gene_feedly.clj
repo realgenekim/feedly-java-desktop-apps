@@ -5,7 +5,10 @@
     [cljfx.ext.list-view :as fx.ext.list-view]
     [feedly-cljfx.feedly :as feedly]
     [feedly-cljfx.views :as views]
-    [feedly-cljfx.events :as events]))
+    [feedly-cljfx.events :as events])
+  (:import
+    [javafx.application Platform]
+    [java.util.concurrent Executors ThreadFactory]))
 
 (def *state
   (atom
@@ -46,4 +49,10 @@
 
 
 
-(fx/mount-renderer *state renderer)
+;(fx/mount-renderer *state renderer)
+
+(defn -main [& args]
+  (println "main starting...")
+  (Platform/setImplicitExit true)
+  (fx/mount-renderer *state renderer))
+  ;(event-handler {::event/type ::event/load-stories}))
