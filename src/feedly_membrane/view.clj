@@ -7,13 +7,15 @@
     [membrane.ui :as ui :refer [horizontal-layout vertical-layout on]]
     [re-frame.core :as rf :refer [reg-event-db reg-event-fx inject-cofx path after reg-sub subscribe dispatch]]
     [feedly-membrane.text :as text]
+    ; note that ::events/event-name is required to use aliased namespace
     [feedly-membrane.events :as events]
+    [feedly-membrane.subs :as subs]
     [feedly-membrane.htmlcleaner :as html]))
 
 
 (defn search-input [{:keys [id title on-save on-stop]}]
   (let [input-id [:search-input id]
-        text     @(rf/subscribe [:searchbox-text input-id])]
+        text     @(rf/subscribe [:searchbox-text])]
     (horizontal-layout
       (ui/button "Search"
                  (fn []

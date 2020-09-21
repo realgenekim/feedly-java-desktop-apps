@@ -14,6 +14,11 @@
     (:searchbox-text db)))
 
 (reg-sub
+  :search-text
+  (fn [db [_ id]]
+    (get db id "")))
+
+(reg-sub
   :filter-text
   (fn [db _]
     ;(println "sub: search-text")
