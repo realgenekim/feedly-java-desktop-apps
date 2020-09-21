@@ -1,0 +1,6 @@
+--input dist
+--main-jar feedly.jar
+--name "cljfx-feedly"
+--main-class clojure.main
+--arguments -m
+--arguments feedly-cljfx.gene-feedly
